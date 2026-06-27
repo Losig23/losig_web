@@ -1,0 +1,51 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+
+# Unity asset/cache databases
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+sysinfo.txt
+
+# Unity crash and profiler files
+*.stackdump
+*.tmp
+*.tmp.*
+*.log
+
+# Auto-generated Visual Studio / Rider / VS Code files
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Unity Addressables and local package artifacts
+Assets/AddressableAssetsData/*/*.bin*
+
+# Keep source assets and project settings tracked.
+# Commit: Assets/, Packages/, ProjectSettings/
+# Do not commit: Library/, Temp/, Logs/, UserSettings/, Builds/
