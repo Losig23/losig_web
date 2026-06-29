@@ -34,6 +34,7 @@ public static class PortfolioApartmentSceneBuilder
         BuildHallway(furniture.transform);
         BuildBedroom(furniture.transform);
         BuildBathroom(furniture.transform);
+        AddPortfolioPlaceholders(interactables.transform);
         BuildLighting();
 
         InteractionPromptUI promptUI = BuildPromptUI();
@@ -41,10 +42,43 @@ public static class PortfolioApartmentSceneBuilder
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
+        EnsureSceneInBuildSettings();
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
         Debug.Log($"Built portfolio apartment MVP scene at {ScenePath}");
+    }
+
+    [MenuItem("Tools/Portfolio/Add Website Portfolio Placeholders")]
+    public static void AddWebsitePortfolioPlaceholdersToSavedScene()
+    {
+        EnsureFolders();
+        EnsureLayer(InteractableLayerName);
+        CreateMaterials();
+
+        Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+        GameObject root = GameObject.Find("Portfolio Apartment MVP");
+
+        if (root == null)
+        {
+            Debug.LogWarning($"Could not find the Portfolio Apartment MVP root in {ScenePath}.");
+            return;
+        }
+
+        Transform interactables = root.transform.Find("Interactables");
+        if (interactables == null)
+        {
+            interactables = ChildRoot(root, "Interactables").transform;
+        }
+
+        AddPortfolioPlaceholders(interactables);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene, ScenePath);
+        EnsureSceneInBuildSettings();
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        Debug.Log("Added website portfolio placeholders to the saved apartment scene.");
     }
 
     private static void EnsureFolders()
@@ -58,6 +92,7 @@ public static class PortfolioApartmentSceneBuilder
         EnsureFolder("Assets", "Models");
         EnsureFolder("Assets", "UI");
         EnsureFolder("Assets", "Scripts");
+        EnsureFolder("Assets/Scripts", "Portfolio");
     }
 
     private static void EnsureFolder(string parent, string child)
@@ -164,11 +199,12 @@ public static class PortfolioApartmentSceneBuilder
         const float wallHeight = 2.8f;
         const float wallThickness = 0.12f;
 
-        CreateCube("Living Room Carpet", parent, new Vector3(0f, -0.035f, 2.65f), new Vector3(11f, 0.07f, 7.7f), Materials["CarpetTaupe"]);
-        CreateCube("Hallway Carpet Adjacent To Kitchen", parent, new Vector3(0f, -0.03f, -5.05f), new Vector3(2.4f, 0.06f, 6.9f), Materials["CarpetTaupe"]);
-        CreateCube("Big Bedroom Carpet At Hall End", parent, new Vector3(-3.35f, -0.035f, -5.85f), new Vector3(4.3f, 0.07f, 5.3f), Materials["CarpetTaupe"]);
+        CreateCube("Open Living And Office Carpet", parent, new Vector3(-1.9f, -0.035f, 2.65f), new Vector3(7.2f, 0.07f, 7.7f), Materials["CarpetTaupe"]);
+        CreateCube("Entry Hall Carpet Under Player Spawn", parent, new Vector3(0f, -0.032f, -4.85f), new Vector3(2.4f, 0.064f, 7.3f), Materials["CarpetTaupe"]);
+        CreateCube("Hallway Carpet Between Kitchen And Futon", parent, new Vector3(1.7f, -0.03f, 2.65f), new Vector3(1.0f, 0.06f, 7.7f), Materials["CarpetTaupe"]);
+        CreateCube("Big Bedroom Carpet Behind Kitchen", parent, new Vector3(3.85f, -0.035f, 4.7f), new Vector3(3.3f, 0.07f, 3.6f), Materials["CarpetTaupe"]);
         CreateCube("Kitchen Wood Floor Right Of Entry", parent, new Vector3(3.35f, -0.02f, -4.85f), new Vector3(4.3f, 0.04f, 7.3f), Materials["WoodFloor"]);
-        CreateCube("Bathroom Dark Vinyl Floor", parent, new Vector3(-3.35f, -0.015f, -2.2f), new Vector3(4.3f, 0.05f, 2.0f), Materials["BathroomFloor"]);
+        CreateCube("Bathroom Dark Vinyl Floor Behind Kitchen", parent, new Vector3(3.85f, -0.015f, 1.65f), new Vector3(3.3f, 0.05f, 2.0f), Materials["BathroomFloor"]);
 
         AddCarpetFlecks(parent);
 
@@ -179,16 +215,15 @@ public static class PortfolioApartmentSceneBuilder
 
         WallX("Balcony Wall Far Left", parent, -5.5f, -4.5f, 6.5f, wallHeight, wallThickness);
         WallX("Balcony Wall Between Window And Door", parent, -2.1f, -1.75f, 6.5f, wallHeight, wallThickness);
-        WallX("Balcony Wall Far Right", parent, 1.25f, 5.5f, 6.5f, wallHeight, wallThickness);
+        WallX("Balcony Wall Far Right Left Of Bedroom Window", parent, 1.25f, 2.45f, 6.5f, wallHeight, wallThickness);
+        WallX("Bedroom Back Wall Right Of Window", parent, 4.75f, 5.5f, 6.5f, wallHeight, wallThickness);
 
-        WallZ("Hall Left Wall Segment A Bedroom Side", parent, -1.2f, -8.5f, -6.6f, wallHeight, wallThickness);
-        WallZ("Hall Left Wall Segment B Bedroom Bath Side", parent, -1.2f, -5.35f, -2.85f, wallHeight, wallThickness);
-        WallZ("Hall Left Wall Segment C Bath Living Side", parent, -1.2f, -1.75f, -1.2f, wallHeight, wallThickness);
-        WallZ("Hall Right Wall Segment A Kitchen Side", parent, 1.2f, -8.5f, -6.6f, wallHeight, wallThickness);
-        WallZ("Hall Right Wall Segment B Kitchen Side", parent, 1.2f, -5.35f, -2.85f, wallHeight, wallThickness);
-        WallZ("Hall Right Wall Segment C Living Side", parent, 1.2f, -1.75f, -1.2f, wallHeight, wallThickness);
-        WallX("Big Bedroom Bathroom Divider", parent, -5.5f, -1.2f, -3.2f, wallHeight, wallThickness);
-        WallX("Bathroom Living Divider", parent, -5.5f, -1.2f, -1.2f, wallHeight, wallThickness);
+        WallZ("Kitchen Left Wall Before Hall Opening", parent, 1.2f, -8.5f, -1.35f, wallHeight, wallThickness);
+        WallZ("Room Wall With Bathroom Door Front Segment", parent, 2.2f, 0.65f, 1.15f, wallHeight, wallThickness);
+        WallZ("Room Wall Between Bathroom And Bedroom Doors", parent, 2.2f, 2.15f, 3.65f, wallHeight, wallThickness);
+        WallZ("Room Wall Behind Bedroom Door", parent, 2.2f, 4.65f, 6.5f, wallHeight, wallThickness);
+        WallX("Kitchen Bathroom Divider Behind Kitchen", parent, 2.2f, 5.5f, 0.65f, wallHeight, wallThickness);
+        WallX("Bathroom Big Bedroom Divider", parent, 2.2f, 5.5f, 2.85f, wallHeight, wallThickness);
 
         CreateCube("Entry Support Column Beside Kitchen", parent, new Vector3(1.2f, wallHeight * 0.5f, -6.8f), new Vector3(0.42f, wallHeight, 0.42f), Materials["WallCream"]);
         CreateCube("Kitchen Soffit Column", parent, new Vector3(1.2f, wallHeight * 0.5f, -1.2f), new Vector3(0.42f, wallHeight, 0.42f), Materials["WallCream"]);
@@ -198,12 +233,12 @@ public static class PortfolioApartmentSceneBuilder
         AddBaseboards(parent);
 
         CreateDoor("Dark Front Door Left Of Kitchen", parent, new Vector3(0f, 1.05f, -8.56f), new Vector3(1.3f, 2.1f, 0.08f), Quaternion.identity);
-        CreateDoor("Big Bedroom Door At Hall End", parent, new Vector3(-1.14f, 1.05f, -6.0f), new Vector3(0.08f, 2.1f, 1.05f), Quaternion.identity);
-        CreateDoor("Bathroom Door", parent, new Vector3(-1.14f, 1.05f, -2.3f), new Vector3(0.08f, 2.1f, 1.0f), Quaternion.Euler(0f, -25f, 0f));
+        CreateDoor("Bathroom Door From Hall", parent, new Vector3(2.14f, 1.05f, 1.65f), new Vector3(0.08f, 2.1f, 0.9f), Quaternion.Euler(0f, 20f, 0f));
+        CreateDoor("Big Bedroom Door At Hall End", parent, new Vector3(2.14f, 1.05f, 4.15f), new Vector3(0.08f, 2.1f, 0.9f), Quaternion.identity);
 
         AddDoorFrame(parent, new Vector3(0f, 1.05f, -8.58f), 1.42f, 2.22f, true);
-        AddDoorFrame(parent, new Vector3(-1.18f, 1.05f, -6f), 1.12f, 2.18f, false);
-        AddDoorFrame(parent, new Vector3(-1.18f, 1.05f, -2.3f), 1.08f, 2.18f, false);
+        AddDoorFrame(parent, new Vector3(2.18f, 1.05f, 1.65f), 0.98f, 2.18f, false);
+        AddDoorFrame(parent, new Vector3(2.18f, 1.05f, 4.15f), 0.98f, 2.18f, false);
 
         AddBalconyGlass(parent);
         AddBedroomWindow(parent);
@@ -269,13 +304,13 @@ public static class PortfolioApartmentSceneBuilder
         CreateCube("Visitor Chair Back", parent, new Vector3(-3.25f, 0.95f, 2.3f), new Vector3(0.66f, 0.9f, 0.09f), Materials["DarkFabric"]);
         AddChairLegs(parent, new Vector3(-3.25f, 0.23f, 2.0f), 0.55f, 0.55f, 0.46f, Materials["BlackMetal"]);
 
-        CreateCube("Black Futon Couch Base", parent, new Vector3(4.65f, 0.43f, 2.8f), new Vector3(1.25f, 0.35f, 2.5f), Materials["DarkFabric"]);
-        CreateCube("Black Futon Couch Back", parent, new Vector3(5.12f, 0.94f, 2.8f), new Vector3(0.25f, 1.0f, 2.5f), Materials["DarkFabric"]);
-        CreateCube("Laptop On Futon Placeholder", parent, new Vector3(4.25f, 0.73f, 3.2f), new Vector3(0.52f, 0.04f, 0.36f), Materials["BlackMetal"]);
+        CreateCube("Black Futon Couch Base Left Of Hall", parent, new Vector3(0.55f, 0.43f, 3.25f), new Vector3(1.25f, 0.35f, 2.5f), Materials["DarkFabric"]);
+        CreateCube("Black Futon Couch Back", parent, new Vector3(1.02f, 0.94f, 3.25f), new Vector3(0.25f, 1.0f, 2.5f), Materials["DarkFabric"]);
+        CreateCube("Laptop On Futon Placeholder", parent, new Vector3(0.15f, 0.73f, 3.65f), new Vector3(0.52f, 0.04f, 0.36f), Materials["BlackMetal"]);
 
-        CreateCylinder("Standing Lamp Pole", parent, new Vector3(4.9f, 1.35f, 4.95f), 0.035f, 2.35f, Materials["BlackMetal"]);
-        CreateSphere("Standing Lamp Shade Top", parent, new Vector3(4.7f, 2.35f, 4.8f), new Vector3(0.35f, 0.35f, 0.35f), Materials["TrimWhite"]);
-        CreateSphere("Standing Lamp Shade Mid", parent, new Vector3(5.03f, 1.95f, 4.9f), new Vector3(0.30f, 0.30f, 0.30f), Materials["TrimWhite"]);
+        CreateCylinder("Standing Lamp Pole", parent, new Vector3(0.9f, 1.35f, 5.2f), 0.035f, 2.35f, Materials["BlackMetal"]);
+        CreateSphere("Standing Lamp Shade Top", parent, new Vector3(0.7f, 2.35f, 5.05f), new Vector3(0.35f, 0.35f, 0.35f), Materials["TrimWhite"]);
+        CreateSphere("Standing Lamp Shade Mid", parent, new Vector3(1.03f, 1.95f, 5.15f), new Vector3(0.30f, 0.30f, 0.30f), Materials["TrimWhite"]);
 
         CreateCube("Wall AC Unit", parent, new Vector3(-4.75f, 2.02f, 6.23f), new Vector3(1.2f, 0.55f, 0.18f), Materials["WhiteAppliance"]);
         AddVentLines(parent, new Vector3(-4.75f, 2.02f, 6.12f), 1.0f, 0.34f, 6, true);
@@ -289,6 +324,119 @@ public static class PortfolioApartmentSceneBuilder
             Quaternion.identity,
             Materials["BlackMetal"]);
         AddShoeRackFallbackDetails(parent);
+    }
+
+    private static void AddPortfolioPlaceholders(Transform interactables)
+    {
+        const string groupName = "Website Portfolio Placeholders";
+
+        Transform existing = interactables.Find(groupName);
+        if (existing != null)
+        {
+            Object.DestroyImmediate(existing.gameObject);
+        }
+
+        GameObject group = new GameObject(groupName);
+        group.transform.SetParent(interactables);
+
+        Quaternion labelRotation = Quaternion.Euler(0f, -90f, 0f);
+        Vector3 plaqueSize = new Vector3(0.05f, 0.42f, 0.82f);
+
+        CreatePortfolioLinkPlaque(
+            group.transform,
+            "Projects Link Plaque",
+            "Projects",
+            "Press E to open projects",
+            "https://your-domain.example/projects",
+            new Vector3(-5.42f, 1.62f, 3.55f),
+            plaqueSize,
+            Materials["CabinetWood"],
+            labelRotation);
+
+        CreatePortfolioLinkPlaque(
+            group.transform,
+            "GitHub Link Plaque",
+            "GitHub",
+            "Press E to open GitHub",
+            "https://github.com/your-username",
+            new Vector3(-5.42f, 1.62f, 2.55f),
+            plaqueSize,
+            Materials["BlackMetal"],
+            labelRotation);
+
+        CreatePortfolioLinkPlaque(
+            group.transform,
+            "LinkedIn Link Plaque",
+            "LinkedIn",
+            "Press E to open LinkedIn",
+            "https://www.linkedin.com/in/your-profile",
+            new Vector3(-5.42f, 1.62f, 1.55f),
+            plaqueSize,
+            Materials["GlassBlue"],
+            labelRotation);
+
+        CreatePortfolioLinkPlaque(
+            group.transform,
+            "Contact Link Plaque",
+            "Contact",
+            "Press E to contact me",
+            "mailto:you@example.com",
+            new Vector3(-5.42f, 1.62f, 0.55f),
+            plaqueSize,
+            Materials["Brass"],
+            labelRotation);
+
+        SetLayerRecursively(group, LayerMask.NameToLayer(InteractableLayerName));
+    }
+
+    private static void CreatePortfolioLinkPlaque(
+        Transform parent,
+        string name,
+        string label,
+        string prompt,
+        string url,
+        Vector3 position,
+        Vector3 size,
+        Material material,
+        Quaternion labelRotation)
+    {
+        GameObject plaqueRoot = new GameObject(name);
+        plaqueRoot.transform.SetParent(parent);
+        plaqueRoot.transform.position = position;
+
+        PortfolioLinkInteractable interactable = plaqueRoot.AddComponent<PortfolioLinkInteractable>();
+        SerializedObject interactableSerialized = new SerializedObject(interactable);
+        interactableSerialized.FindProperty("interactionPrompt").stringValue = prompt;
+        interactableSerialized.FindProperty("url").stringValue = url;
+        interactableSerialized.ApplyModifiedProperties();
+
+        CreateCube($"{name} Target", plaqueRoot.transform, position, size, material);
+        CreateCube($"{name} Label Backing", plaqueRoot.transform, position + new Vector3(0.028f, 0f, 0f), new Vector3(0.012f, size.y * 0.72f, size.z * 0.78f), Materials["MonitorScreen"], false);
+        CreateWorldLabel($"{name} Label", plaqueRoot.transform, label, position + new Vector3(0.043f, 0f, 0f), labelRotation);
+    }
+
+    private static void CreateWorldLabel(string name, Transform parent, string text, Vector3 position, Quaternion rotation)
+    {
+        GameObject labelObject = new GameObject(name);
+        labelObject.transform.SetParent(parent);
+        labelObject.transform.position = position;
+        labelObject.transform.rotation = rotation;
+
+        TextMesh textMesh = labelObject.AddComponent<TextMesh>();
+        textMesh.text = text;
+        textMesh.anchor = TextAnchor.MiddleCenter;
+        textMesh.alignment = TextAlignment.Center;
+        textMesh.characterSize = 0.055f;
+        textMesh.fontSize = 42;
+        textMesh.color = Color.white;
+
+        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf") ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+        if (font != null)
+        {
+            textMesh.font = font;
+            MeshRenderer renderer = labelObject.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = font.material;
+        }
     }
 
     private static void BuildHallway(Transform parent)
@@ -305,36 +453,36 @@ public static class PortfolioApartmentSceneBuilder
             "Assets/AssetsStore/Furniture/Assets/Prefabs/bed.prefab",
             "Bedroom Bed Asset",
             parent,
-            new Vector3(-3.65f, 0.42f, -7.05f),
+            new Vector3(3.85f, 0.42f, 5.05f),
             new Vector3(2.5f, 0.85f, 2.1f),
             Quaternion.Euler(0f, 90f, 0f),
             Materials["BeddingWhite"]);
 
-        CreateCube("Bed Placeholder Mattress", parent, new Vector3(-3.65f, 0.58f, -7.05f), new Vector3(2.4f, 0.35f, 2.0f), Materials["BeddingWhite"]);
-        CreateCube("Dark Bed Base", parent, new Vector3(-3.65f, 0.25f, -7.05f), new Vector3(2.55f, 0.5f, 2.15f), Materials["DarkFabric"]);
-        CreateCube("Metal Headboard", parent, new Vector3(-3.65f, 1.0f, -8.05f), new Vector3(2.55f, 0.75f, 0.08f), Materials["Brass"]);
-        CreateCube("Blanket Pile", parent, new Vector3(-3.5f, 0.86f, -6.75f), new Vector3(1.2f, 0.16f, 0.6f), Materials["BlanketPattern"]);
-        CreateCube("Pillow Left", parent, new Vector3(-4.2f, 0.86f, -7.82f), new Vector3(0.72f, 0.16f, 0.36f), Materials["BeddingWhite"]);
-        CreateCube("Pillow Right", parent, new Vector3(-3.0f, 0.86f, -7.82f), new Vector3(0.72f, 0.16f, 0.36f), Materials["BeddingWhite"]);
+        CreateCube("Bed Placeholder Mattress", parent, new Vector3(3.85f, 0.58f, 5.05f), new Vector3(2.4f, 0.35f, 2.0f), Materials["BeddingWhite"]);
+        CreateCube("Dark Bed Base", parent, new Vector3(3.85f, 0.25f, 5.05f), new Vector3(2.55f, 0.5f, 2.15f), Materials["DarkFabric"]);
+        CreateCube("Metal Headboard", parent, new Vector3(3.85f, 1.0f, 6.05f), new Vector3(2.55f, 0.75f, 0.08f), Materials["Brass"]);
+        CreateCube("Blanket Pile", parent, new Vector3(3.7f, 0.86f, 4.75f), new Vector3(1.2f, 0.16f, 0.6f), Materials["BlanketPattern"]);
+        CreateCube("Pillow Left", parent, new Vector3(3.25f, 0.86f, 5.82f), new Vector3(0.72f, 0.16f, 0.36f), Materials["BeddingWhite"]);
+        CreateCube("Pillow Right", parent, new Vector3(4.45f, 0.86f, 5.82f), new Vector3(0.72f, 0.16f, 0.36f), Materials["BeddingWhite"]);
 
-        CreateCube("Bedroom Moving Box A", parent, new Vector3(-2.0f, 0.28f, -4.35f), new Vector3(0.75f, 0.55f, 0.65f), Materials["Cardboard"]);
-        CreateCube("Bedroom Moving Box B", parent, new Vector3(-4.95f, 0.25f, -4.1f), new Vector3(0.65f, 0.5f, 0.55f), Materials["Cardboard"]);
-        CreateCube("Bedroom Side Table", parent, new Vector3(-4.95f, 0.38f, -7.75f), new Vector3(0.55f, 0.75f, 0.5f), Materials["CabinetWood"]);
+        CreateCube("Bedroom Moving Box A", parent, new Vector3(2.75f, 0.28f, 3.45f), new Vector3(0.75f, 0.55f, 0.65f), Materials["Cardboard"]);
+        CreateCube("Bedroom Moving Box B", parent, new Vector3(4.95f, 0.25f, 3.45f), new Vector3(0.65f, 0.5f, 0.55f), Materials["Cardboard"]);
+        CreateCube("Bedroom Side Table", parent, new Vector3(4.95f, 0.38f, 5.75f), new Vector3(0.55f, 0.75f, 0.5f), Materials["CabinetWood"]);
     }
 
     private static void BuildBathroom(Transform parent)
     {
-        CreateCube("Bathroom Vanity", parent, new Vector3(-4.95f, 0.45f, -2.3f), new Vector3(0.75f, 0.9f, 1.1f), Materials["WhiteAppliance"]);
-        CreateCube("Bathroom Countertop", parent, new Vector3(-4.95f, 0.95f, -2.3f), new Vector3(0.82f, 0.08f, 1.16f), Materials["Countertop"]);
-        CreateCube("Bathroom Mirror", parent, new Vector3(-5.42f, 1.65f, -2.3f), new Vector3(0.04f, 0.9f, 0.72f), Materials["GlassBlue"]);
+        CreateCube("Bathroom Vanity", parent, new Vector3(4.95f, 0.45f, 1.65f), new Vector3(0.75f, 0.9f, 1.1f), Materials["WhiteAppliance"]);
+        CreateCube("Bathroom Countertop", parent, new Vector3(4.95f, 0.95f, 1.65f), new Vector3(0.82f, 0.08f, 1.16f), Materials["Countertop"]);
+        CreateCube("Bathroom Mirror", parent, new Vector3(5.42f, 1.65f, 1.65f), new Vector3(0.04f, 0.9f, 0.72f), Materials["GlassBlue"]);
 
-        CreateCylinder("Toilet Bowl", parent, new Vector3(-3.2f, 0.42f, -1.55f), 0.34f, 0.36f, Materials["WhiteAppliance"]);
-        CreateCube("Toilet Tank", parent, new Vector3(-3.2f, 0.75f, -1.18f), new Vector3(0.75f, 0.5f, 0.2f), Materials["WhiteAppliance"]);
-        CreateCylinder("Small Bathroom Trash Can", parent, new Vector3(-2.3f, 0.26f, -1.55f), 0.22f, 0.52f, Materials["BlackMetal"]);
+        CreateCylinder("Toilet Bowl", parent, new Vector3(3.15f, 0.42f, 1.05f), 0.34f, 0.36f, Materials["WhiteAppliance"]);
+        CreateCube("Toilet Tank", parent, new Vector3(3.15f, 0.75f, 0.78f), new Vector3(0.75f, 0.5f, 0.2f), Materials["WhiteAppliance"]);
+        CreateCylinder("Small Bathroom Trash Can", parent, new Vector3(2.65f, 0.26f, 2.25f), 0.22f, 0.52f, Materials["BlackMetal"]);
 
-        CreateCube("Towel Bar", parent, new Vector3(-2.8f, 1.35f, -3.13f), new Vector3(1.1f, 0.04f, 0.04f), Materials["Brass"]);
-        CreateCube("Hanging Towel", parent, new Vector3(-2.8f, 1.05f, -3.1f), new Vector3(0.85f, 0.55f, 0.05f), Materials["CarpetLightFleck"]);
-        AddBroom(parent, new Vector3(-4.45f, 0.85f, -1.45f));
+        CreateCube("Towel Bar", parent, new Vector3(3.6f, 1.35f, 2.78f), new Vector3(1.1f, 0.04f, 0.04f), Materials["Brass"]);
+        CreateCube("Hanging Towel", parent, new Vector3(3.6f, 1.05f, 2.75f), new Vector3(0.85f, 0.55f, 0.05f), Materials["CarpetLightFleck"]);
+        AddBroom(parent, new Vector3(4.45f, 0.85f, 1.05f));
     }
 
     private static void BuildLighting()
@@ -353,7 +501,7 @@ public static class PortfolioApartmentSceneBuilder
         AddPointLight("Warm Kitchen Light", new Vector3(3.5f, 2.35f, -3.6f), 3.5f, 1.1f);
         AddPointLight("Living Room Window Glow", new Vector3(-1f, 2.0f, 5.8f), 5.5f, 1.0f);
         AddPointLight("Hall Light", new Vector3(0f, 2.35f, -4.7f), 3.2f, 0.85f);
-        AddPointLight("Bedroom Window Fill", new Vector3(-3.7f, 2.0f, -8.0f), 4.5f, 0.8f);
+        AddPointLight("Bedroom Window Fill", new Vector3(3.7f, 2.0f, 6.0f), 4.5f, 0.8f);
     }
 
     private static void AddPointLight(string name, Vector3 position, float range, float intensity)
@@ -485,11 +633,11 @@ public static class PortfolioApartmentSceneBuilder
 
     private static void AddBedroomWindow(Transform parent)
     {
-        CreateCube("Bedroom Window Glass", parent, new Vector3(-3.6f, 1.45f, -8.44f), new Vector3(2.45f, 1.05f, 0.04f), Materials["GlassBlue"]);
-        CreateCube("Bedroom Window Frame Top", parent, new Vector3(-3.6f, 2.0f, -8.4f), new Vector3(2.55f, 0.06f, 0.08f), Materials["TrimWhite"]);
-        CreateCube("Bedroom Window Frame Bottom", parent, new Vector3(-3.6f, 0.88f, -8.4f), new Vector3(2.55f, 0.06f, 0.08f), Materials["TrimWhite"]);
-        AddHorizontalBlinds(parent, -4.75f, -2.45f, -8.32f, 1.45f, 0.95f, 9);
-        AddOutsideView(parent, new Vector3(-3.6f, 1.42f, -8.75f), new Vector3(2.6f, 1.35f, 0.04f));
+        CreateCube("Bedroom Window Glass", parent, new Vector3(3.6f, 1.45f, 6.44f), new Vector3(2.15f, 1.05f, 0.04f), Materials["GlassBlue"]);
+        CreateCube("Bedroom Window Frame Top", parent, new Vector3(3.6f, 2.0f, 6.4f), new Vector3(2.25f, 0.06f, 0.08f), Materials["TrimWhite"]);
+        CreateCube("Bedroom Window Frame Bottom", parent, new Vector3(3.6f, 0.88f, 6.4f), new Vector3(2.25f, 0.06f, 0.08f), Materials["TrimWhite"]);
+        AddHorizontalBlinds(parent, 2.65f, 4.55f, 6.32f, 1.45f, 0.95f, 9);
+        AddOutsideView(parent, new Vector3(3.6f, 1.42f, 6.75f), new Vector3(2.35f, 1.35f, 0.04f));
     }
 
     private static void AddOutsideView(Transform parent, Vector3 position, Vector3 size)
@@ -535,12 +683,12 @@ public static class PortfolioApartmentSceneBuilder
         {
             float x = Mathf.Lerp(-5.2f, 5.2f, Halton(i + 1, 2));
             float z = Mathf.Lerp(-8.1f, 6.0f, Halton(i + 3, 3));
-            if (x < -1.25f && z < -1.2f)
+            if (x > 1.25f && z < -1.2f)
             {
                 continue;
             }
 
-            if (x > 1.2f && z > -3.2f && z < -1.2f)
+            if (x > 2.2f && z > 0.65f && z < 2.85f)
             {
                 continue;
             }
@@ -818,6 +966,26 @@ public static class PortfolioApartmentSceneBuilder
         }
 
         return null;
+    }
+
+    private static void EnsureSceneInBuildSettings()
+    {
+        List<EditorBuildSettingsScene> scenes = new List<EditorBuildSettingsScene>
+        {
+            new EditorBuildSettingsScene(ScenePath, true)
+        };
+
+        foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+        {
+            if (scene.path == ScenePath)
+            {
+                continue;
+            }
+
+            scenes.Add(scene);
+        }
+
+        EditorBuildSettings.scenes = scenes.ToArray();
     }
 
     private static void EnsureLayer(string layerName)
